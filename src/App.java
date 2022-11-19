@@ -7,23 +7,37 @@ public class App {
         getFileText();
     }
     
-    public static String getFileText() {
-        String inputData = " ";
+    public static String[] getFileText() {
+        int numberOfLines = 0;
+        File input = new File("C:/Users/fckptn/Desktop/js/jsNode/testTaskProj/javaBidTestTask/src/input.txt");
         try {
-            File input = new File("src/input.txt");
             Scanner fileReader = new Scanner(input);
             while(fileReader.hasNextLine()) {
-                inputData += fileReader.nextLine();
-                System.out.println(inputData);
+                numberOfLines++;
+                fileReader.nextLine();
+            }            
+            fileReader.close();
+        }
+        catch (Exception e) {
+            System.out.println("An error occured while reading file");
+            System.out.println(e.getMessage());
+        }
+
+        String[] lines = new String[numberOfLines];
+        try {
+            Scanner fileReader = new Scanner(input);
+            int iterator = 0;
+            while(fileReader.hasNextLine()) {
+                lines[iterator] = fileReader.nextLine();
+                iterator++;
+                System.out.println(lines[iterator - 1]);
             }
             fileReader.close();
         }
-        catch (FileNotFoundException e) {
+        catch(Exception e) {
             System.out.println("An error occured while reading file");
-            e.printStackTrace();
-            return inputData;
         }
-        return inputData;
+        return lines;
     }
 }
 
