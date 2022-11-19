@@ -1,10 +1,26 @@
 import java.io.File;
 import java.util.Scanner;
-import java.io.FileNotFoundException;
 
 public class App {
     public static void main(String[] args) throws Exception {
-        getFileText();
+        String[] lines = getFileText();
+        for (String line : lines) {
+            String[] values = line.split(",");
+            switch (values[0]) {
+                case "u":
+                    Update update = new Update(Integer.parseInt(values[1]), Integer.parseInt(values[2]), values[3]);
+                    break;
+                case "q":
+                    System.out.println("q");
+                    break;
+                case "o":
+                    System.out.println("o");
+                    break;
+            
+                default:
+                    break;
+            }
+        }
     }
     
     public static String[] getFileText() {
@@ -30,7 +46,6 @@ public class App {
             while(fileReader.hasNextLine()) {
                 lines[iterator] = fileReader.nextLine();
                 iterator++;
-                System.out.println(lines[iterator - 1]);
             }
             fileReader.close();
         }
