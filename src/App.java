@@ -1,12 +1,17 @@
 import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class App {
     public static void main(String[] args) throws Exception {
+        long startTime = System.nanoTime();
         String[] lines = getFileText();
         BidBoard board = new BidBoard();
+        File output = new File("output.txt");
+        output.createNewFile();
+        FileWriter writer = new FileWriter("output.txt");
         for (String line : lines) {
             String[] values = line.split(",");
             switch (values[0]) {
@@ -14,8 +19,9 @@ public class App {
                     board.update(values[3], Integer.parseInt(values[1]), Integer.parseInt(values[2]));
                     break;
                 case "q":
-                    if(values[1].equals("size")) System.out.println(board.query(Integer.parseInt(values[2])));
-                    else System.out.println(board.query(values[1]));
+                    if(values[1].equals("size")) writer.write(board.query(Integer.parseInt(values[2])));
+                    else writer.write(board.query(values[1]));
+                    writer.write("\n");
                     break;
                 case "o":
                     board.order(values[1], Integer.parseInt(values[2]));
@@ -25,6 +31,9 @@ public class App {
                     break;
             }
         }
+        writer.close();
+        long stopTime = System.nanoTime();
+        System.out.println(stopTime - startTime);
     }
     
     public static String[] getFileText() {
@@ -93,7 +102,7 @@ class BidBoard {
         }
         return bidsList.get(bestBid).getBid();
     }
-    public int query (int queryPrice) {
+    public String query (int queryPrice) {
         int size = 0;
         for (int i = 0; i < bidsList.size(); i++) {
             if(bidsList.get(i).getPrice() == queryPrice) {
@@ -102,56 +111,58 @@ class BidBoard {
                 continue;
             }
         }
-        return size;
+        return Integer.toString(size);
     }
 
     public void order (String orderType, int orderSize) {
         int leftToRemove = orderSize;
 
-        if(orderType.equals("buy") && leftToRemove > 0) {
-            int highestPriseIndex = -1;
-            for (int i = 0; i < bidsList.size(); i++) {
-                if(bidsList.get(i).getType().equals("bid")) {
-                    if(highestPriseIndex == -1) highestPriseIndex = i;
-                    if(bidsList.get(i).getPrice() > bidsList.get(highestPriseIndex).getPrice()) highestPriseIndex = i;
-                } else {
-                    continue;
+        while(leftToRemove > 0) {
+            if(orderType.equals("buy")) {
+                int highestPriseIndex = -1;
+                for (int i = 0; i < bidsList.size(); i++) {
+                    if(bidsList.get(i).getType().equals("ask")) {
+                        if(highestPriseIndex == -1) highestPriseIndex = i;
+                        if(bidsList.get(i).getPrice() > bidsList.get(highestPriseIndex).getPrice()) highestPriseIndex = i;
+                    } else {
+                        continue;
+                    }
+                }
+                if (bidsList.get(highestPriseIndex).getSize() < leftToRemove) {
+                    leftToRemove -= bidsList.get(highestPriseIndex).getSize();
+                    bidsList.remove(highestPriseIndex);
+                }
+                if (bidsList.get(highestPriseIndex).getSize() == leftToRemove) {
+                    leftToRemove = 0;
+                    bidsList.remove(highestPriseIndex);
+                }
+                if (bidsList.get(highestPriseIndex).getSize() > leftToRemove) {
+                    bidsList.get(highestPriseIndex).reduceSize(leftToRemove);
+                    leftToRemove = 0;
                 }
             }
-            if (bidsList.get(highestPriseIndex).getSize() < leftToRemove) {
-                leftToRemove -= bidsList.get(highestPriseIndex).getSize();
-                bidsList.remove(highestPriseIndex);
-            }
-            if (bidsList.get(highestPriseIndex).getSize() == leftToRemove) {
-                leftToRemove = 0;
-                bidsList.remove(highestPriseIndex);
-            }
-            if (bidsList.get(highestPriseIndex).getSize() > leftToRemove) {
-                bidsList.get(highestPriseIndex).reduceSize(leftToRemove);
-                leftToRemove = 0;
-            }
-        }
-        if(orderType.equals("sell") && leftToRemove > 0) {
-            int highestPriseIndex = -1;
-            for (int i = 0; i < bidsList.size(); i++) {
-                if(bidsList.get(i).getType().equals("ask")) {
-                    if(highestPriseIndex == -1) highestPriseIndex = i;
-                    if(bidsList.get(i).getPrice() > bidsList.get(highestPriseIndex).getPrice()) highestPriseIndex = i;
-                } else {
-                    continue;
+            if(orderType.equals("sell")) {
+                int highestPriseIndex = -1;
+                for (int i = 0; i < bidsList.size(); i++) {
+                    if(bidsList.get(i).getType().equals("bid")) {
+                        if(highestPriseIndex == -1) highestPriseIndex = i;
+                        if(bidsList.get(i).getPrice() > bidsList.get(highestPriseIndex).getPrice()) highestPriseIndex = i;
+                    } else {
+                        continue;
+                    }
                 }
-            }
-            if (bidsList.get(highestPriseIndex).getSize() < leftToRemove) {
-                leftToRemove -= bidsList.get(highestPriseIndex).getSize();
-                bidsList.remove(highestPriseIndex);
-            }
-            if (bidsList.get(highestPriseIndex).getSize() == leftToRemove) {
-                leftToRemove = 0;
-                bidsList.remove(highestPriseIndex);
-            }
-            if (bidsList.get(highestPriseIndex).getSize() > leftToRemove) {
-                bidsList.get(highestPriseIndex).reduceSize(leftToRemove);
-                leftToRemove = 0;
+                if (bidsList.get(highestPriseIndex).getSize() < leftToRemove) {
+                    leftToRemove -= bidsList.get(highestPriseIndex).getSize();
+                    bidsList.remove(highestPriseIndex);
+                }
+                if (bidsList.get(highestPriseIndex).getSize() == leftToRemove) {
+                    leftToRemove = 0;
+                    bidsList.remove(highestPriseIndex);
+                }
+                if (bidsList.get(highestPriseIndex).getSize() > leftToRemove) {
+                    bidsList.get(highestPriseIndex).reduceSize(leftToRemove);
+                    leftToRemove = 0;
+                }
             }
         }
     }
