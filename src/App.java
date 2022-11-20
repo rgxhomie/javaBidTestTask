@@ -1,7 +1,5 @@
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -16,11 +14,11 @@ public class App {
                     board.update(values[3], Integer.parseInt(values[1]), Integer.parseInt(values[2]));
                     break;
                 case "q":
-                    if(values[1].equals("size")) System.out.println(board.query(values[2]));
+                    if(values[1].equals("size")) System.out.println(board.query(Integer.parseInt(values[2])));
                     else System.out.println(board.query(values[1]));
                     break;
                 case "o":
-                    System.out.println("o");
+                    board.order(values[1], Integer.parseInt(values[2]));
                     break;
             
                 default:
@@ -68,13 +66,7 @@ class BidBoard {
         bidsList = new ArrayList<Bid>();
     }
     public void update (String type, int price, int size) {
-        if(type.equals("bid")) {
-            bidsList.add(new BidBid(type, price, size));
-        }
-        if(type.equals("ask")) {
-            bidsList.add(new BidAsk(type, price, size));
-        }
-
+        bidsList.add(new Bid(type, price, size));
     }
 
     public String query (String queryType) {
@@ -114,7 +106,54 @@ class BidBoard {
     }
 
     public void order (String orderType, int orderSize) {
+        int leftToRemove = orderSize;
 
+        if(orderType.equals("buy") && leftToRemove > 0) {
+            int highestPriseIndex = -1;
+            for (int i = 0; i < bidsList.size(); i++) {
+                if(bidsList.get(i).getType().equals("bid")) {
+                    if(highestPriseIndex == -1) highestPriseIndex = i;
+                    if(bidsList.get(i).getPrice() > bidsList.get(highestPriseIndex).getPrice()) highestPriseIndex = i;
+                } else {
+                    continue;
+                }
+            }
+            if (bidsList.get(highestPriseIndex).getSize() < leftToRemove) {
+                leftToRemove -= bidsList.get(highestPriseIndex).getSize();
+                bidsList.remove(highestPriseIndex);
+            }
+            if (bidsList.get(highestPriseIndex).getSize() == leftToRemove) {
+                leftToRemove = 0;
+                bidsList.remove(highestPriseIndex);
+            }
+            if (bidsList.get(highestPriseIndex).getSize() > leftToRemove) {
+                bidsList.get(highestPriseIndex).reduceSize(leftToRemove);
+                leftToRemove = 0;
+            }
+        }
+        if(orderType.equals("sell") && leftToRemove > 0) {
+            int highestPriseIndex = -1;
+            for (int i = 0; i < bidsList.size(); i++) {
+                if(bidsList.get(i).getType().equals("ask")) {
+                    if(highestPriseIndex == -1) highestPriseIndex = i;
+                    if(bidsList.get(i).getPrice() > bidsList.get(highestPriseIndex).getPrice()) highestPriseIndex = i;
+                } else {
+                    continue;
+                }
+            }
+            if (bidsList.get(highestPriseIndex).getSize() < leftToRemove) {
+                leftToRemove -= bidsList.get(highestPriseIndex).getSize();
+                bidsList.remove(highestPriseIndex);
+            }
+            if (bidsList.get(highestPriseIndex).getSize() == leftToRemove) {
+                leftToRemove = 0;
+                bidsList.remove(highestPriseIndex);
+            }
+            if (bidsList.get(highestPriseIndex).getSize() > leftToRemove) {
+                bidsList.get(highestPriseIndex).reduceSize(leftToRemove);
+                leftToRemove = 0;
+            }
+        }
     }
 }
 
@@ -141,23 +180,11 @@ class Bid {
         return _type;
     }
 
+    public void reduceSize(int size) {
+        _size -= size;
+    }
+
     public String getBid() {
         return String.format("%d, %d", _price, _size);
     }
-}
-
-class BidBid extends Bid {
-
-    public BidBid(String type, int price, int size) {
-        super(type, price, size);
-    }
-
-}
-
-class BidAsk extends Bid {
-
-    public BidAsk(String type, int price, int size) {
-        super(type, price, size);
-    }
-    
 }
