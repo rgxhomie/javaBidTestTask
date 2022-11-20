@@ -8,14 +8,19 @@ import java.util.Scanner;
 public class App {
     public static void main(String[] args) throws Exception {
         String[] lines = getFileText();
+        BidBoard board = new BidBoard();
         for (String line : lines) {
             String[] values = line.split(",");
             switch (values[0]) {
                 case "u":
+                    System.out.println(values[3]);
                     System.out.println(Integer.parseInt(values[1]));
+                    System.out.println(Integer.parseInt(values[2]));
+                    board.update(values[3], Integer.parseInt(values[1]), Integer.parseInt(values[2]));
                     break;
                 case "q":
-                    System.out.println("q");
+                    if(values[1] == "size") System.out.println(board.query(values[2]));
+                    else System.out.println(board.query(values[1]));
                     break;
                 case "o":
                     System.out.println("o");
@@ -65,17 +70,45 @@ class BidBoard {
     public BidBoard () {
         bidsList = new ArrayList<Bid>();
     }
-    public void update (char type, int price, int size) {
-        bidsList.add(new Bid(type, price, size));
+    public void update (String type, int price, int size) {
+        if(type == "bid") bidsList.add(new BidBid(type, price, size));
+        if(type == "ask") bidsList.add(new BidAsk(type, price, size));
     }
 
     public String query (String queryType) {
-        if (queryType == "best_bid") return " ";//getBid(Collections.max(bidsList));
-        if (queryType == "best_ask") return " ";
-        return " ";
+        int bestBid = -1;
+        if (queryType == "best_bid") {
+            for (int i = 0; i < bidsList.size(); i++) {
+                if(bidsList.get(i).getType() == "bid") {
+                    if(bestBid == -1) bestBid = i;
+                    if(bidsList.get(i).getPrice() > bidsList.get(bestBid).getPrice()) bestBid = i;
+                } else {
+                    continue;
+                }
+            }
+        }
+        if (queryType == "best_ask") {
+            for (int i = 0; i < bidsList.size(); i++) {
+                if(bidsList.get(i).getType() == "ask") {
+                    if(bestBid == -1) bestBid = i;
+                    if(bidsList.get(i).getPrice() > bidsList.get(bestBid).getPrice()) bestBid = i;
+                } else {
+                    continue;
+                }
+            }
+        }
+        return bidsList.get(bestBid).getBid();
     }
-    public String query (String queryType, int querySize) {
-        return " ";
+    public int query (int queryPrice) {
+        int size = 0;
+        for (int i = 0; i < bidsList.size(); i++) {
+            if(bidsList.get(i).getPrice() == queryPrice) {
+                size += bidsList.get(i).getSize();
+            } else {
+                continue;
+            }
+        }
+        return size;
     }
 
     public void order (String orderType, int orderSize) {
@@ -84,11 +117,11 @@ class BidBoard {
 }
 
 class Bid {
-    char _type;
-    int _price;
-    int _size;
+    private String _type;
+    private int _price;
+    private int _size;
     
-    public Bid (char type, int price, int size) {
+    public Bid (String type, int price, int size) {
         _type = type;
         _price = price;
         _size = size;
@@ -98,7 +131,31 @@ class Bid {
         return _price;
     }
 
+    public int getSize() {
+        return _size;
+    }
+
+    public String getType() {
+        return _type;
+    }
+
     public String getBid() {
         return String.format("%d, %d", _price, _size);
     }
+}
+
+class BidBid extends Bid {
+
+    public BidBid(String type, int price, int size) {
+        super(type, price, size);
+    }
+
+}
+
+class BidAsk extends Bid {
+
+    public BidAsk(String type, int price, int size) {
+        super(type, price, size);
+    }
+    
 }
