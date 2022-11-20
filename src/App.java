@@ -13,13 +13,10 @@ public class App {
             String[] values = line.split(",");
             switch (values[0]) {
                 case "u":
-                    System.out.println(values[3]);
-                    System.out.println(Integer.parseInt(values[1]));
-                    System.out.println(Integer.parseInt(values[2]));
                     board.update(values[3], Integer.parseInt(values[1]), Integer.parseInt(values[2]));
                     break;
                 case "q":
-                    if(values[1] == "size") System.out.println(board.query(values[2]));
+                    if(values[1].equals("size")) System.out.println(board.query(values[2]));
                     else System.out.println(board.query(values[1]));
                     break;
                 case "o":
@@ -71,15 +68,20 @@ class BidBoard {
         bidsList = new ArrayList<Bid>();
     }
     public void update (String type, int price, int size) {
-        if(type == "bid") bidsList.add(new BidBid(type, price, size));
-        if(type == "ask") bidsList.add(new BidAsk(type, price, size));
+        if(type.equals("bid")) {
+            bidsList.add(new BidBid(type, price, size));
+        }
+        if(type.equals("ask")) {
+            bidsList.add(new BidAsk(type, price, size));
+        }
+
     }
 
     public String query (String queryType) {
         int bestBid = -1;
-        if (queryType == "best_bid") {
+        if (queryType.equals("best_bid")) {
             for (int i = 0; i < bidsList.size(); i++) {
-                if(bidsList.get(i).getType() == "bid") {
+                if(bidsList.get(i).getType().equals("bid")) {
                     if(bestBid == -1) bestBid = i;
                     if(bidsList.get(i).getPrice() > bidsList.get(bestBid).getPrice()) bestBid = i;
                 } else {
@@ -87,9 +89,9 @@ class BidBoard {
                 }
             }
         }
-        if (queryType == "best_ask") {
+        if (queryType.equals("best_ask")) {
             for (int i = 0; i < bidsList.size(); i++) {
-                if(bidsList.get(i).getType() == "ask") {
+                if(bidsList.get(i).getType().equals("ask")) {
                     if(bestBid == -1) bestBid = i;
                     if(bidsList.get(i).getPrice() > bidsList.get(bestBid).getPrice()) bestBid = i;
                 } else {
