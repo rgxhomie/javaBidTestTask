@@ -1,4 +1,8 @@
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 public class App {
@@ -8,7 +12,7 @@ public class App {
             String[] values = line.split(",");
             switch (values[0]) {
                 case "u":
-                    Update update = new Update(Integer.parseInt(values[1]), Integer.parseInt(values[2]), values[3]);
+                    System.out.println(Integer.parseInt(values[1]));
                     break;
                 case "q":
                     System.out.println("q");
@@ -52,38 +56,49 @@ public class App {
         catch(Exception e) {
             System.out.println("An error occured while reading file");
         }
-        return lines;
+        return lines; 
     }
 }
 
-class Update {
-    int _updatePrice;
-    int _updateSize;
-    String _updateType;
-    public Update(int price, int size, String updateType) {
-        _updatePrice = price;
-        _updateSize = size;
-        _updateType = updateType;
+class BidBoard {
+    List<Bid> bidsList;
+    public BidBoard () {
+        bidsList = new ArrayList<Bid>();
+    }
+    public void update (char type, int price, int size) {
+        bidsList.add(new Bid(type, price, size));
+    }
+
+    public String query (String queryType) {
+        if (queryType == "best_bid") return " ";//getBid(Collections.max(bidsList));
+        if (queryType == "best_ask") return " ";
+        return " ";
+    }
+    public String query (String queryType, int querySize) {
+        return " ";
+    }
+
+    public void order (String orderType, int orderSize) {
+
     }
 }
 
-class Query {
-    String _queryType;
-    int _queryPrice;
-    public Query(String queryType) {
-        _queryType = queryType;
+class Bid {
+    char _type;
+    int _price;
+    int _size;
+    
+    public Bid (char type, int price, int size) {
+        _type = type;
+        _price = price;
+        _size = size;
     }
-    public Query(String queryType, int queryPrice) {
-        _queryType = queryType;
-        _queryPrice = queryPrice;
-    }
-}
 
-class Order {
-    String _orderType;
-    int _orderSize;
-    public Order(String orderType, int orderSize) {
-        _orderType = orderType;
-        _orderSize = orderSize;
+    public int getPrice() {
+        return _price;
+    }
+
+    public String getBid() {
+        return String.format("%d, %d", _price, _size);
     }
 }
